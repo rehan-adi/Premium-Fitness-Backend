@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import env from 'dotenv';
+import cookieParser from 'cookie-parser';
+
 import dbConnect from './config/dbConnect.js';
 import authRouter from './routes/auth.routes.js';
 
@@ -11,6 +13,7 @@ const server = express();
 dbConnect();
 
 // Middleware
+server.use(cookieParser());
 server.use(express.json());
 server.use(cors());
 
