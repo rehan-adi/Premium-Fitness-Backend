@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 
 import dbConnect from './config/dbConnect.js';
 import authRouter from './routes/auth.routes.js';
+import contactRouter from './routes/contact.routes.js'; 
 
 env.config();
 const server = express();
@@ -18,7 +19,8 @@ server.use(express.json());
 server.use(cors());
 
 // routes
-server.use( "/user" ,authRouter);
+server.use( "/user", authRouter);
+server.use( "/user", contactRouter);
 
 server.listen(process.env.PORT || 2000, () => {
     console.log(`Server is running on port ${process.env.PORT || 2000}`);
