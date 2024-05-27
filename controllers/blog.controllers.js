@@ -27,10 +27,24 @@ const postBlog = async (req, res) => {
   }
 };
 
-const getAllBlog = async(req, res) => {
+const getAllBlog = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 4;
+  const skip = (page - 1) * limit;
+
   try {
-      const blogs = await blogModel.find();
-      return res.status(200).json({ success: true, data: blogs });
+    const blogs = await blogModel.find().skip(skip).limit(limit);
+    const totalBlogs = await blogModel.countDocuments();
+    return res.status(200).json({
+      success: true,
+      data: blogs,
+      pagination: {
+        total: totalBlogs,
+        page,
+        limit,
+        totalPages: Math.ceil(totalBlogs / limit),
+      },
+    });
   } catch (error) {
     console.log(error);
     return res
