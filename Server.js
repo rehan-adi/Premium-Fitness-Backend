@@ -16,6 +16,7 @@ dbConnect();
 
 // Middleware
 server.use(cookieParser());
+server.use(express.urlencoded({ extended: false }));
 server.use(express.json());
 server.use(cors());
 

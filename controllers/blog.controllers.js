@@ -2,7 +2,8 @@ import blogModel from "../models/blog.model.js";
 
 const postBlog = async (req, res) => {
   try {
-    const { image, heading, description, link } = req.body;
+    const { heading, description, link } = req.body;
+    const { image } = req.file;
 
     if (!image || !heading || !description || !link) {
       return res
@@ -10,7 +11,7 @@ const postBlog = async (req, res) => {
         .json({ success: false, message: "Please fill all the fields" });
     }
     await blogModel.create({
-      image,
+      image: image.path,
       heading,
       description,
       link,
