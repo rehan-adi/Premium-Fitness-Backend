@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "API Gateway for payment processing microservices",
   "main": "server.ts",
-  "type": "module",
   "scripts": {
     "start": "node ./dist/server.js",
     "build": "tsc"
