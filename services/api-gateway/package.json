@@ -1,0 +1,24 @@
+{
+  "name": "api-gateway",
+  "version": "1.0.0",
+  "description": "API Gateway for payment processing microservices",
+  "main": "server.ts",
+  "type": "module",
+  "scripts": {
+    "start": "node ./dist/server.js",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "Rehan",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}
