@@ -1,5 +1,6 @@
 import { z } from "zod";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma";
 import { Request, Response } from "express";
 
@@ -12,6 +13,11 @@ const signupSchema = z.object({
   expiry_date: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid expiry date.",
   }),
+});
+
+const signinSchema = z.object({
+  email: z.string().email("Invalid email format."),
+  password: z.string().min(8, "Password must be at least 8 characters long."),
 });
 
 export const signup = async (req: Request, res: Response) => {
@@ -83,8 +89,64 @@ export const signup = async (req: Request, res: Response) => {
   }
 };
 
-export const signin = async () => {
-    try {
-    } catch (error) {}
-  };
-  
+export const signin = async (req: Request, res: Response) => {
+  try {
+    // Parse and validate the input using Zod
+    const parsedBody = signinSchema.safeParse(req.body);
+
+    if (!parsedBody.success) {
+      return res.status(400).json({
+        success: false,
+        message: parsedBody.error.errors.map((err) => err.message).join(", "),
+      });
+    }
+
+    const { email, password } = parsedBody.data;
+
+    // Check if the user exists
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    // Compare the provided password with the hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials.",
+      });
+    }
+
+    // Generate a JWT token inside the signin function
+    const payload = { userId: user.id, email: user.email };
+    const secretKey = process.env.JWT_SECRET_KEY!;
+    const options = { expiresIn: "1h" }; // Token expires in 1 hour
+    const token = jwt.sign(payload, secretKey, options);
+
+    return res.status(200).json({
+      success: true,
+      message: "User signed in successfully.",
+      data: {
+        userId: user.id,
+        email: user.email,
+        token,
+      },
+    });
+  } catch (error: any) {
+    console.error("Signin error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to sign in.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
