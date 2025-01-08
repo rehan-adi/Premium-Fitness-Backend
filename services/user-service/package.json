@@ -24,7 +24,8 @@
     "helmet": "^8.0.0",
     "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
