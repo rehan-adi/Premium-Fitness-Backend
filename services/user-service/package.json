@@ -1,0 +1,22 @@
+{
+  "name": "user-service",
+  "version": "1.0.0",
+  "description": "User service for payment processing microservices",
+  "main": "server.js",
+  "scripts": {
+    "start": "node ./dist/server.js",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "Rehan",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "6.2.1",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "prisma": "^6.2.1",
+    "typescript": "^5.7.2"
+  }
+}
