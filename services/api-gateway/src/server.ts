@@ -16,16 +16,15 @@ server.use(bodyParser.json());
 const userServiceProxy = createProxyMiddleware({
   target: "http://localhost:1000",
   changeOrigin: true,
-  timeout: 7000,
   pathRewrite: {
-    "^/auth": "/auth",
-    "^/payment-methods": "/payment-methods",
+    "^/api/auth": "/auth",
+    "^/api/payment-methods": "/payment-methods",
   },
 });
 
 // user service routes
-server.use("/auth", userServiceProxy); // Forward /auth to User Service
-server.use("/payment-methods", userServiceProxy); // Forward /payment-methods to User Service
+server.use("/api/auth", userServiceProxy);
+server.use("/api/payment-methods", userServiceProxy);
 
 // health check route
 server.get("/", (req: Request, res: Response) => {
