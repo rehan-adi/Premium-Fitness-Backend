@@ -1,4 +1,5 @@
 import hpp from "hpp";
+import cors from "cors";
 import env from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -12,6 +13,11 @@ const server = express();
 // middleware's
 server.use(express.json());
 server.use(hpp());
+server.use(
+  cors({
+    origin: "http://localhost:3000",
+  })
+);
 server.use(helmet());
 server.use(morgan("dev"));
 
