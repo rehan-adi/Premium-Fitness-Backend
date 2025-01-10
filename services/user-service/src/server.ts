@@ -3,7 +3,9 @@ import cors from "cors";
 import env from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 import { authRoute } from "./routes/auth.routes";
+import { paymentRoute } from "./routes/payment-methods.routes";
 import express, { NextFunction, Request, Response } from "express";
 
 env.config();
@@ -12,6 +14,7 @@ const server = express();
 
 // middleware's
 server.use(express.json());
+server.use(cookieParser());
 server.use(hpp());
 server.use(
   cors({
@@ -26,7 +29,7 @@ server.disable("x-powered-by");
 
 // routes
 server.use("/auth", authRoute);
-// server.use("/payment-methods");
+server.use("/payment-methods", paymentRoute);
 
 // Health Check Route
 server.get("/", (req: Request, res: Response) => {
