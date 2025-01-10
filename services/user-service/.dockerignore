@@ -1,0 +1,37 @@
+# Ignore node_modules
+node_modules
+
+# Ignore local environment files
+.env
+.env.*
+
+# Ignore logs and debug files
+npm-debug.log
+pnpm-debug.log
+
+# Ignore build directories (for Next.js, TypeScript, etc.)
+.next
+out
+dist
+
+# Ignore local README and documentation files
+*.md
+
+# Ignore files related to Git and version control
+.git
+.gitignore
+.gitattributes
+
+# Ignore Docker configuration files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Ignore editor-specific or OS-specific files
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Ignore TypeScript cache
+*.tsbuildinfo
