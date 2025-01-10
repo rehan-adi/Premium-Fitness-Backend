@@ -1,0 +1,27 @@
+{
+  "name": "order-service",
+  "version": "1.0.0",
+  "description": "Order service for payment processing microservices",
+  "main": "server.js",
+  "scripts": {
+    "start": "node ./dist/server.js",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "Rehan",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/morgan": "^1.9.9",
+    "typescript": "^5.7.3"
+  }
+}
