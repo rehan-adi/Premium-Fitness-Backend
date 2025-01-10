@@ -1,8 +1,8 @@
 import cors from "cors";
 import morgan from "morgan";
 import bodyParser from "body-parser";
+import proxy from "express-http-proxy";
 import express, { Request, Response } from "express";
-import { createProxyMiddleware } from "http-proxy-middleware";
 
 const server = express();
 const PORT = process.env.PORT || 3000;
@@ -13,12 +13,10 @@ server.use(morgan("dev"));
 server.use(bodyParser.json());
 
 // proxy middleware for User Service (handles both /auth and /payment-methods)
-const userServiceProxy = createProxyMiddleware({
-  target: "http://localhost:1000",
-  changeOrigin: true,
-  pathRewrite: {
-    "^/api/auth": "/auth",
-    "^/api/payment-methods": "/payment-methods",
+const userServiceProxy = proxy("http://localhost:1000", {
+  proxyReqPathResolver: (req) => {
+    const newPath = req.originalUrl.replace(/^\/api/, "");
+    return newPath;
   },
 });
 
