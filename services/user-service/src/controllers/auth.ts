@@ -1,24 +1,8 @@
-import { z } from "zod";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma";
 import { Request, Response } from "express";
-
-// Define Zod schema for input validation
-const signupSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters long."),
-  email: z.string().email("Invalid email format."),
-  password: z.string().min(6, "Password must be at least 6 characters long."),
-  card_number: z.string().length(16, "Card number must be exactly 16 digits."),
-  expiry_date: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: "Invalid expiry date.",
-  }),
-});
-
-const signinSchema = z.object({
-  email: z.string().email("Invalid email format."),
-  password: z.string().min(8, "Password must be at least 8 characters long."),
-});
+import { signupSchema, signinSchema } from "../validations/auth.validations";
 
 export const signup = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -29,10 +13,10 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
         success: false,
         message: parsedBody.error.errors.map((err) => err.message).join(", "),
       });
-      return; // Ensure no further execution
+      return;
     }
 
-    const { name, email, password, card_number, expiry_date } = parsedBody.data;
+    const { name, email, password } = parsedBody.data;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -49,21 +33,13 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
         data: { name, email, password: hashedPassword },
       });
 
-      await prisma.payment_methods.create({
-        data: {
-          userId: newUser.id,
-          card_number,
-          expiry_date: new Date(expiry_date),
-        },
-      });
-
       return newUser;
     });
 
     res.status(201).json({
       success: true,
-      message: "User created successfully.",
       data: { id: user.id, name: user.name, email: user.email },
+      message: "User created successfully.",
     });
   } catch (error: any) {
     console.error("Signup error:", error);
@@ -107,10 +83,17 @@ export const signin = async (req: Request, res: Response): Promise<void> => {
       { expiresIn: "1h" }
     );
 
+    res.cookie("token", token, {
+      maxAge: 72 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
+
     res.status(200).json({
       success: true,
-      message: "User signed in successfully.",
       data: { userId: user.id, email: user.email, token },
+      message: "User signed in successfully.",
     });
   } catch (error: any) {
     console.error("Signin error:", error);
