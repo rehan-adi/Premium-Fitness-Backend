@@ -11,7 +11,9 @@ export const addPaymentMethods = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { card_number, expiry_date } = paymentSchema.parse(req.body);
+    const { card_number, expiry_date, cardholder_name } = paymentSchema.parse(
+      req.body
+    );
     const userId = req.user?.id;
 
     if (!userId) {
@@ -31,17 +33,21 @@ export const addPaymentMethods = async (
       return;
     }
 
-    const newPaymentMethod = await prisma.payment_methods.create({
+    // Convert expiry_date from MM/YY format to a full date
+    const [month, year] = expiry_date.split("/");
+    const expiryDate = new Date(`20${year}-${month}-01`);
+
+    await prisma.payment_methods.create({
       data: {
         userId: userId,
         card_number,
-        expiry_date: new Date(expiry_date),
+        cardholder_name,
+        expiry_date: expiryDate,
       },
     });
 
     res.status(201).json({
       success: true,
-      newPaymentMethod,
       message: "Payment method added successfully",
     });
   } catch (error: any) {

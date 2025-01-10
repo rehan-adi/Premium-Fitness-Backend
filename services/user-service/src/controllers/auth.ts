@@ -16,7 +16,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { name, email, password } = parsedBody.data;
+    const { name, email, password, phone_number } = parsedBody.data;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -30,7 +30,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
 
     const user = await prisma.$transaction(async (prisma) => {
       const newUser = await prisma.user.create({
-        data: { name, email, password: hashedPassword },
+        data: { name, email, password: hashedPassword, phone_number },
       });
 
       return newUser;
@@ -38,7 +38,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
 
     res.status(201).json({
       success: true,
-      data: { id: user.id, name: user.name, email: user.email },
+      data: { id: user.id, email: user.email },
       message: "User created successfully.",
     });
   } catch (error: any) {
