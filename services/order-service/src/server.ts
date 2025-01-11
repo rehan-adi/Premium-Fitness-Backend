@@ -2,6 +2,7 @@ import cors from "cors";
 import env from "dotenv";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import { orderRoute } from "./routes/order.routes";
 import express, { NextFunction, Request, Response } from "express";
 
 env.config();
@@ -17,6 +18,9 @@ server.use(
   })
 );
 server.use(morgan("dev"));
+
+// order route
+server.use("/order", orderRoute);
 
 // Health Check Route
 server.get("/", (req: Request, res: Response) => {
