@@ -58,3 +58,56 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response) => {
     });
   }
 };
+
+export const getOrderStatus = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res
+        .status(401)
+        .json({ success: false, message: "User not authenticated." });
+      return;
+    }
+
+    const orderId = req.params.orderId;
+
+    if (!orderId) {
+      res
+        .status(400)
+        .json({ success: false, message: "Order ID is required." });
+      return;
+    }
+
+    const orderStatus = await prisma.order.findUnique({
+      where: {
+        orderId,
+        userId,
+      },
+    });
+
+    if (!orderStatus) {
+      res.status(404).json({ success: false, message: "Order not found." });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        orderId: orderStatus.orderId,
+        status: orderStatus.status,
+      },
+      message: "Order status retrieved successfully.",
+    });
+  } catch (error) {
+    console.error("Error while checking order status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to check order status.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
