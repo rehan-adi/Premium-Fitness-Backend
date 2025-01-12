@@ -2,12 +2,16 @@ import cors from "cors";
 import env from "dotenv";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import { runConsumer } from "./utils/kafka";
 import { orderRoute } from "./routes/order.routes";
 import express, { NextFunction, Request, Response } from "express";
 
 env.config();
 
 const server = express();
+
+// run kafka consumer 
+runConsumer();
 
 // middleware's
 server.use(express.json());
