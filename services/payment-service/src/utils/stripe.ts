@@ -1,8 +1,13 @@
+import env from "dotenv";
 import Stripe from "stripe";
+
+env.config();
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY as string;
 
-export const stripe = new Stripe(STRIPE_SECRET_KEY);
+export const stripe = new Stripe(STRIPE_SECRET_KEY, {
+  apiVersion: "2024-12-18.acacia"
+});
 
 export async function processPayment(
   orderId: string,
