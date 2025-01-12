@@ -20,9 +20,20 @@ const userServiceProxy = proxy("http://localhost:1000", {
   },
 });
 
+// proxy middleware for Order Service
+const orderServiceProxy = proxy("http://localhost:2000", {
+  proxyReqPathResolver: (req) => {
+    const newPath = req.originalUrl.replace(/^\/api/, "");
+    return newPath;
+  },
+});
+
 // user service routes
 server.use("/api/auth", userServiceProxy);
 server.use("/api/payment-methods", userServiceProxy);
+
+// order service routes
+server.use("/api/order", orderServiceProxy);
 
 // health check route
 server.get("/", (req: Request, res: Response) => {
