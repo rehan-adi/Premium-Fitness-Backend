@@ -59,3 +59,46 @@ export const addPaymentMethods = async (
     });
   }
 };
+
+export const getPaymentDetails = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    console.log(userId);
+
+    const cardDetails = await prisma.payment_methods.findFirst({
+      where: {
+        userId,
+      },
+      select: {
+        id: true,
+        card_number: true,
+        cardholder_name: true,
+        expiry_date: true,
+      },
+    });
+
+    if (!cardDetails) {
+      res.status(404).json({
+        success: false,
+        message: "No payment details found for this user",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: cardDetails,
+      message: "Payment details fetched successfully",
+    });
+  } catch (error: any) {
+    console.error("Error while getting payment method:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get payment method",
+      error: error.message,
+    });
+  }
+};
