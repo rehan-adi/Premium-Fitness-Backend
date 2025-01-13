@@ -33,21 +33,25 @@ export async function runConsumer() {
           const paymentId = event.paymentIntentId;
 
           try {
-            await resend.emails.send({
+            const { data, error } = await resend.emails.send({
               from: "Acme <onboarding@resend.dev>",
               to: userEmail,
               subject: "Payment Success",
               html: `
                 <h1>Payment Successful</h1>
                 <p>Your payment of $${event.amount} was successful.</p>
-                <p>For the order $${event.item} order if is ${event.orderId}</p>
+                <p>For the order <strong>#${event.orderId}</strong>, item: <em>${event.item}</em></p>
                 <p>Transaction ID: ${paymentId}</p>
               `,
             });
 
-            console.log(
-              `Email sent to ${userEmail} regarding payment success.`
-            );
+            if (error) {
+              console.error(`Error sending email to ${event.email}:`, error);
+            } else {
+              console.log(
+                `Email sent to ${event.email} regarding payment success.`
+              );
+            }
           } catch (error) {
             console.error(`Error sending email to ${userEmail}:`, error);
           }
