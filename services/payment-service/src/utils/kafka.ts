@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Kafka } from "kafkajs";
+import { Kafka, Partitioners } from "kafkajs";
 import { processPayment } from "../utils/stripe";
 
 const kafka = new Kafka({
@@ -13,7 +13,9 @@ const kafka = new Kafka({
   },
 });
 
-const producer = kafka.producer();
+const producer = kafka.producer({
+  createPartitioner: Partitioners.DefaultPartitioner,
+});
 let isProducerConnected = false;
 
 export async function publishEvent(
