@@ -1,4 +1,5 @@
 import { Kafka } from "kafkajs";
+import prisma from "../lib/prisma";
 
 const kafka = new Kafka({
   clientId: "order-service",
@@ -32,19 +33,34 @@ const consumer = kafka.consumer({
 export async function runConsumer() {
   try {
     await consumer.connect();
+    await consumer.subscribe({ topic: "payment.event", fromBeginning: true });
 
-    await consumer.subscribe({ topic: "payment.success", fromBeginning: true });
-    await consumer.subscribe({ topic: "payment.failed", fromBeginning: true });
-
-    console.log("Consumer is listening to payment.success and payment.failed");
+    console.log("Consumer is listening to payment.event");
 
     // Process messages
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
-        const event = message.value?.toString();
-        console.log(
-          `Received message from ${topic}: ${message.value?.toString()}`
-        );
+        const event = message.value?.toString() as string;
+        const data = JSON.parse(event);
+
+        if (
+          data.paymentStatus === "success" ||
+          data.paymentStatus === "failed"
+        ) {
+          try {
+            await prisma.order.update({
+              where: {
+                orderId: data.orderId,
+              },
+              data: {
+                status: data.paymentStatus,
+              },
+            });
+            console.log("Status update");
+          } catch (error) {
+            console.error("Error updating order status:", error);
+          }
+        }
       },
     });
   } catch (error) {
