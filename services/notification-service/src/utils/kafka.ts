@@ -1,4 +1,5 @@
 import { Kafka } from "kafkajs";
+import { resend } from "./resend";
 
 const kafka = new Kafka({
   clientId: "notification-service",
@@ -18,18 +19,43 @@ const consumer = kafka.consumer({
 export async function runConsumer() {
   try {
     await consumer.connect();
+    await consumer.subscribe({ topic: "payment.event", fromBeginning: true });
 
-    await consumer.subscribe({ topic: "payment.success", fromBeginning: true });
-    await consumer.subscribe({ topic: "payment.failed", fromBeginning: true });
-
-    console.log("Consumer is listening to payment.success and payment.failed");
+    console.log("Consumer is listening to payment.event");
 
     // Process messages
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
-        console.log(
-          `Received message from ${topic}: ${message.value?.toString()}`
-        );
+        const event = JSON.parse(message.value?.toString() || "{}");
+
+        if (topic === "payment.event") {
+          console.log(
+            `Received payment.success event: ${JSON.stringify(event)}`
+          );
+
+          const userEmail = event.email;
+          const paymentId = event.paymentIntentId;
+
+          try {
+            await resend.emails.send({
+              from: "no-reply@yourdomain.com",
+              to: userEmail,
+              subject: "Payment Success",
+              html: `
+                <h1>Payment Successful</h1>
+                <p>Your payment of $${event.amount} was successful.</p>
+                <p>For the order $${event.item} order if is ${event.orderId}</p>
+                <p>Transaction ID: ${paymentId}</p>
+              `,
+            });
+
+            console.log(
+              `Email sent to ${userEmail} regarding payment success.`
+            );
+          } catch (error) {
+            console.error(`Error sending email to ${userEmail}:`, error);
+          }
+        }
       },
     });
   } catch (error) {
