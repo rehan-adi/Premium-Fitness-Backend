@@ -29,16 +29,12 @@ export async function runConsumer() {
         const event = JSON.parse(message.value?.toString() || "{}");
 
         if (topic === "payment.event") {
-          console.log(
-            `Received payment.success event: ${JSON.stringify(event)}`
-          );
-
           const userEmail = event.email;
           const paymentId = event.paymentIntentId;
 
           try {
             await resend.emails.send({
-              from: "no-reply@yourdomain.com",
+              from: "Acme <onboarding@resend.dev>",
               to: userEmail,
               subject: "Payment Success",
               html: `
