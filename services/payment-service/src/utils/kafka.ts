@@ -1,3 +1,4 @@
+import axios from "axios";
 import { Kafka } from "kafkajs";
 import { processPayment } from "../utils/stripe";
 
@@ -15,14 +16,35 @@ const kafka = new Kafka({
 const producer = kafka.producer();
 let isProducerConnected = false;
 
-export async function publishEvent(messages: string) {
+export async function publishEvent(
+  orderId: string,
+  userId: string,
+  email: string,
+  amount: number,
+  item: string,
+  paymentStatus: string,
+  paymentIntentId: string
+) {
   if (!isProducerConnected) {
     await producer.connect();
     isProducerConnected = true;
   }
+
+  const messageData = {
+    orderId,
+    userId,
+    email,
+    amount,
+    item,
+    paymentStatus,
+    paymentIntentId,
+  };
+
   await producer.send({
-    topic: "order.create",
-    messages: [{ key: `message-${Date.now()}`, value: messages }],
+    topic: "payment.event",
+    messages: [
+      { key: `message-${Date.now()}`, value: JSON.stringify(messageData) },
+    ],
   });
 }
 
@@ -48,8 +70,40 @@ export async function runConsumer() {
           return;
         }
 
+        const getUserPaymentDetails = await axios.get(
+          `http://localhost:3000/api/payment-methods/get/${userId}`
+        );
+        const userEmail = getUserPaymentDetails.data.email;
+
         const result = await processPayment(orderId, userId, amount, item);
         console.log(`Payment result for order ${orderId}:`, result);
+
+        if (result.success) {
+          const paymentIntentId = result.paymentIntentId!;
+          const paymentStatus = "success";
+
+          publishEvent(
+            orderId,
+            userId,
+            userEmail,
+            amount,
+            item,
+            paymentStatus,
+            paymentIntentId
+          );
+        } else {
+          const paymentIntentId = result.paymentIntentId || "N/A";
+          const paymentStatus = "failed";
+          publishEvent(
+            orderId,
+            userId,
+            userEmail,
+            amount,
+            item,
+            paymentStatus,
+            paymentIntentId
+          );
+        }
       },
     });
   } catch (error) {
