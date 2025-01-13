@@ -64,23 +64,36 @@ export const getPaymentDetails = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  try {
-    const { userId } = req.params;
-    console.log(userId);
+  const { userId } = req.params;
 
-    const cardDetails = await prisma.payment_methods.findFirst({
-      where: {
-        userId,
-      },
+  try {
+    const userPaymentDetails = await prisma.user.findUnique({
+      where: { id: userId },
       select: {
-        id: true,
-        card_number: true,
-        cardholder_name: true,
-        expiry_date: true,
+        email: true,
+        paymentMethods: {
+          select: {
+            id: true,
+            card_number: true,
+            cardholder_name: true,
+            expiry_date: true,
+          },
+        },
       },
     });
 
-    if (!cardDetails) {
+    if (!userPaymentDetails) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    if (
+      !userPaymentDetails.paymentMethods ||
+      userPaymentDetails.paymentMethods.length === 0
+    ) {
       res.status(404).json({
         success: false,
         message: "No payment details found for this user",
@@ -90,14 +103,15 @@ export const getPaymentDetails = async (
 
     res.status(200).json({
       success: true,
-      data: cardDetails,
+      data: userPaymentDetails.paymentMethods[0],
+      email: userPaymentDetails.email,
       message: "Payment details fetched successfully",
     });
   } catch (error: any) {
-    console.error("Error while getting payment method:", error);
+    console.error("Error fetching payment method or user details:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to get payment method",
+      message: "Failed to fetch payment details",
       error: error.message,
     });
   }
