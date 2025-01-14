@@ -1,4 +1,4 @@
-import { Kafka } from "kafkajs";
+import { Kafka, Partitioners } from "kafkajs";
 import { sendToDLQ } from "./dlq";
 import { resend } from "./resend";
 
@@ -13,7 +13,9 @@ const kafka = new Kafka({
   },
 });
 
-export const producer = kafka.producer({});
+export const producer = kafka.producer({
+  createPartitioner: Partitioners.DefaultPartitioner
+});
 
 const consumer = kafka.consumer({
   groupId: "notification-service-group",
