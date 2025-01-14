@@ -1,4 +1,5 @@
 import { Kafka } from "kafkajs";
+import { sendToDLQ } from "./dlq";
 import { resend } from "./resend";
 
 const kafka = new Kafka({
@@ -7,10 +8,12 @@ const kafka = new Kafka({
   retry: {
     initialRetryTime: 100,
     maxRetryTime: 30000,
-    retries: 10,
+    retries: 5,
     factor: 0.2,
   },
 });
+
+export const producer = kafka.producer({});
 
 const consumer = kafka.consumer({
   groupId: "notification-service-group",
@@ -18,12 +21,13 @@ const consumer = kafka.consumer({
 
 export async function runConsumer() {
   try {
+    await producer.connect();
     await consumer.connect();
+
     await consumer.subscribe({ topic: "payment.event", fromBeginning: true });
 
-    console.log("Consumer is listening to payment.event");
+    console.log("Consumer and Producer is running");
 
-    // Process messages
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
         const event = JSON.parse(message.value?.toString() || "{}");
@@ -107,8 +111,12 @@ export async function runConsumer() {
                 );
               }
             }
-          } catch (error) {
-            console.error(`Error sending email to ${userEmail}:`, error);
+          } catch (error: any) {
+            console.error(
+              `Error sending email to ${userEmail}:`,
+              error.message
+            );
+            sendToDLQ(event, error.message);
           }
         }
       },
