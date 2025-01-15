@@ -1,14 +1,18 @@
 import cors from "cors";
+import env from "dotenv";
 import morgan from "morgan";
 import helmet from "helmet";
 import bodyParser from "body-parser";
 import compression from "compression";
 import proxy from "express-http-proxy";
+import { config } from "./config/index";
 import express, { Request, Response } from "express";
 import { authLimiter, orderLimiter } from "./utils/limiters";
 
+env.config();
+
 const server = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.port;
 
 // middleware's
 server.use(cors());
@@ -18,7 +22,7 @@ server.use(compression());
 server.use(bodyParser.json());
 
 // proxy middleware for User Service (handles both /auth and /payment-methods)
-const userServiceProxy = proxy("http://localhost:1000", {
+const userServiceProxy = proxy(config.userServiceUrl, {
   proxyReqPathResolver: (req) => {
     const newPath = req.originalUrl.replace(/^\/api/, "");
     return newPath;
@@ -26,7 +30,7 @@ const userServiceProxy = proxy("http://localhost:1000", {
 });
 
 // proxy middleware for Order Service
-const orderServiceProxy = proxy("http://localhost:2000", {
+const orderServiceProxy = proxy(config.orderServiceUrl, {
   proxyReqPathResolver: (req) => {
     const newPath = req.originalUrl.replace(/^\/api/, "");
     return newPath;
