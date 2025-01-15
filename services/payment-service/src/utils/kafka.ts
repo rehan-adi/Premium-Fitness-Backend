@@ -72,8 +72,11 @@ export async function runConsumer() {
           return;
         }
 
+        const apiGatewayUrl =
+          process.env.API_GATEWAY_URL || "http://localhost:3000";
+
         const getUserPaymentDetails = await axios.get(
-          `http://localhost:3000/api/payment-methods/get/${userId}`
+          `${apiGatewayUrl}/api/payment-methods/get/${userId}`
         );
         const userEmail = getUserPaymentDetails.data.email;
 
