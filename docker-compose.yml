@@ -8,6 +8,8 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "22181:2181"
+    networks:
+      - network 
 
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -24,6 +26,8 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - network
     healthcheck:
       test:
         ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
@@ -42,6 +46,8 @@ services:
       - ./services/api-gateway/.env
     ports:
       - "3000:3000"
+    networks:
+      - network
 
   # User service
   user-service:
@@ -53,6 +59,8 @@ services:
       - ./services/user-service/.env
     ports:
       - "1000:1000"
+    networks:
+      - network
     depends_on:
       - user-db
 
@@ -66,6 +74,8 @@ services:
       - "5432:5432"
     volumes:
       - userdb:/var/lib/postgresql/data
+    networks:
+      - network  
 
   # Order service
   order-service:
@@ -77,6 +87,8 @@ services:
       - "2000:2000"
     env_file:
       - ./services/order-service/.env
+    networks:
+      - network
     depends_on:
       - order-db
       - kafka
@@ -90,6 +102,8 @@ services:
       - "5433:5432"
     volumes:
       - orderdb:/var/lib/postgresql/data
+    networks:
+      - network  
 
   # Payment service
   payment-service:
@@ -101,6 +115,8 @@ services:
       - ./services/payment-service/.env
     ports:
       - "4000:4000"
+    networks:
+      - network
     depends_on:
       - kafka
 
@@ -114,9 +130,15 @@ services:
       - "5000:5000"
     env_file:
       - ./services/notification-service/.env
+    networks:
+      - network
     depends_on:
       - kafka
 
 volumes:
   userdb:
   orderdb:
+
+networks:
+  network:
+    driver: bridge
