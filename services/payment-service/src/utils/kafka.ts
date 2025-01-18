@@ -4,7 +4,7 @@ import { processPayment } from "../utils/stripe";
 
 const kafka = new Kafka({
   clientId: "payment-service",
-  brokers: ["localhost:29092"],
+  brokers: ["kafka:29092"],
   retry: {
     initialRetryTime: 100,
     maxRetryTime: 30000,
@@ -57,7 +57,6 @@ const consumer = kafka.consumer({
 export async function runConsumer() {
   try {
     await consumer.connect();
-
     await consumer.subscribe({ topic: "order.create", fromBeginning: true });
     console.log("Consumer is listening to order.create");
 
@@ -80,7 +79,17 @@ export async function runConsumer() {
         );
         const userEmail = getUserPaymentDetails.data.email;
 
-        const result = await processPayment(orderId, userId, amount, item);
+        const card_number = getUserPaymentDetails.data.card_number;
+        const expiry_date = getUserPaymentDetails.data.expiry_date;
+
+        const result = await processPayment(
+          orderId,
+          userId,
+          amount,
+          item,
+          card_number,
+          expiry_date
+        );
         console.log(`Payment result for order ${orderId}:`, result);
 
         if (result.success) {
