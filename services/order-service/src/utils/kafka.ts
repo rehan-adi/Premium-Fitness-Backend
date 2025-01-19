@@ -3,7 +3,7 @@ import prisma from "../lib/prisma";
 
 const kafka = new Kafka({
   clientId: "order-service",
-  brokers: ["localhost:29092"],
+  brokers: ["kafka:9092"],
   retry: {
     initialRetryTime: 100,
     maxRetryTime: 30000,

@@ -4,7 +4,7 @@ import { processPayment } from "../utils/stripe";
 
 const kafka = new Kafka({
   clientId: "payment-service",
-  brokers: ["kafka:29092"],
+  brokers: ["kafka:9092"],
   retry: {
     initialRetryTime: 100,
     maxRetryTime: 30000,
